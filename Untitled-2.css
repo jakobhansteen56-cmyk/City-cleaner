@@ -1,0 +1,97 @@
+/* 1. Overall layout: simple light background, centered "phone" */
+body {
+  background: #e5e7eb;               /* light grey, like paper behind phone */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 2. Phone frame: simple white rectangle, minimal shadow */
+.app-shell {
+  border-radius: 20px;
+  max-width: 380px;
+  padding: 20px 18px 14px;
+  background: #ffffff;
+  border: 1px solid #d4d4d8;         /* thin neutral border */
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);  /* much softer shadow */
+}
+
+/* 3. Header text closer to mockup style */
+.header {
+  text-align: left;
+  margin-bottom: 10px;
+}
+
+.app-title {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.tagline,
+.page-subtitle {
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* 4. Large central upload square like in the PDF */
+.main-area {
+  margin-top: 26px;
+}
+
+.square-button {
+  min-height: 220px;                 /* bigger, more like the mockup */
+  border-radius: 10px;
+  border: 2px solid #9ca3af;         /* flat grey border */
+  background: #f9fafb;               /* almost white */
+  box-shadow: none;                  /* no 3D effect */
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.square-button-icon {
+  font-size: 24px;
+  margin-bottom: 12px;
+}
+
+.square-button:hover {
+  background: #f3f4f6;
+  border-color: #6b7280;
+  box-shadow: none;
+  transform: none;                   /* no movement on hover */
+}
+
+/* 5. Panels (page 2–4) more like simple boxes on white background */
+.panel,
+.input-card {
+  background: #f9fafb;
+  border-radius: 10px;
+  border: 1px solid #d4d4d8;
+  box-shadow: none;
+}
+
+/* 6. Buttons: flat, simple */
+.btn-primary {
+  border-radius: 999px;
+  background: #1d4ed8;
+  box-shadow: none;
+}
+
+.btn-secondary {
+  background: #ffffff;
+  border: 1px solid #d4d4d8;
+}
+
+.btn-primary:hover {
+  background: #1e40af;
+}
+
+.btn-secondary:hover {
+  background: #f3f4f6;
+}
+
+/* 7. Footer: small, subtle, like caption text */
+.footer {
+  font-size: 11px;
+  color: #9ca3af;
+}

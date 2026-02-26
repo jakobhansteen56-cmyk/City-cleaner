@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>City-cleaner – Single Page</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f4f6fb;
+      color: #222;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .card {
+      background-color: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+      max-width: 420px;
+      width: 90%;
+      padding: 24px 24px 32px;
+      box-sizing: border-box;
+    }
+
+    .screen {
+      display: none;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    .title {
+      font-size: 1.6rem;
+      font-weight: bold;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    .subtitle {
+      font-size: 0.95rem;
+      margin-bottom: 24px;
+      color: #444;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    .app-name {
+      font-weight: bold;
+      font-size: 1.2rem;
+      margin-bottom: 24px;
+      color: #1e3a8a;
+      text-align: center;
+    }
+
+    .buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .primary-btn,
+    .secondary-btn {
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 1rem;
+      font-weight: bold;
+      text-decoration: none;
+      display: inline-block;
+      text-align: center;
+      cursor: pointer;
+      border: none;
+      transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.1s ease;
+    }
+
+    .primary-btn {
+      background-color: #1e3a8a;
+      color: #ffffff;
+    }
+
+    .primary-btn:hover {
+      background-color: #1b3170;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
+    }
+
+    .primary-btn:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+
+    .take-image-btn {
+      border: 2px dashed #1e3a8a;
+      background-color: #e0ecff;
+      color: #1e3a8a;
+      width: 100%;
+      padding: 16px;
+    }
+
+    .take-image-btn:hover {
+      background-color: #c7dbff;
+    }
+
+    .file-input-wrapper {
+      margin-bottom: 24px;
+      text-align: left;
+    }
+
+    input[type="file"] {
+      width: 100%;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-top: 12px;
+      margin-bottom: 4px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid #cbd5f5;
+      box-sizing: border-box;
+      font-size: 0.95rem;
+    }
+
+    .centered {
+      text-align: center;
+    }
+
+    .home-link {
+      display: inline-block;
+      margin-top: 24px;
+      font-size: 0.95rem;
+      color: #1e3a8a;
+      text-decoration: none;
+    }
+
+    .home-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <!-- Screen 1: Intro -->
+    <section id="screen1" class="screen active">
+      <div class="title">With just one easy step you can make a street clean.</div>
+      <div class="subtitle">
+        Just take a picture of an area that is not clean, tell us where it is, and we do the rest!
+      </div>
+      <div class="app-name">City-cleaner</div>
+
+      <div class="buttons">
+        <!-- Only the "Take image" option -->
+        <button class="take-image-btn primary-btn" type="button" onclick="goToScreen(2)">Take image</button>
+      </div>
+    </section>
+
+    <!-- Screen 2: Choose photo from library -->
+    <section id="screen2" class="screen">
+      <div class="title">Choose photo from library</div>
+      <div class="file-input-wrapper">
+        <input type="file" id="photo" name="photo" accept="image/*" />
+      </div>
+      <div class="centered">
+        <button class="primary-btn" type="button" onclick="goToScreen(3)">Continue</button>
+      </div>
+    </section>
+
+    <!-- Screen 3: Address -->
+    <section id="screen3" class="screen">
+      <div class="title">Where is this?</div>
+      <div class="subtitle" style="text-align:left;">
+        Share GPS-position on phone<br />
+        Choose position on map
+      </div>
+
+      <label for="address">Address of the area</label>
+      <input type="text" id="address" name="address" placeholder="Type the address here" />
+
+      <div class="centered">
+        <button class="primary-btn" type="button" onclick="goToScreen(4)">Continue</button>
+      </div>
+    </section>
+
+    <!-- Screen 4: Thank you -->
+    <section id="screen4" class="screen">
+      <div class="title">Thank you for keeping the city clean!</div>
+      <div class="subtitle">
+        Your report has been noted.
+      </div>
+      <div class="centered">
+        <button class="secondary-btn primary-btn" type="button" onclick="goToScreen(1)">Start over</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    function goToScreen(number) {
+      var totalScreens = 4;
+      for (var i = 1; i <= totalScreens; i++) {
+        var el = document.getElementById('screen' + i);
+        if (el) {
+          el.classList.toggle('active', i === number);
+        }
+      }
+    }
+  </script>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>City-cleaner</title>
+  <style>
+    :root {
+      --bg-color: #f3f6fb;
+      --card-bg: #ffffff;
+      --accent: #1c7ed6;
+      --accent-soft: #e7f3ff;
+      --text-main: #222222;
+      --text-muted: #555555;
+      --border-radius-lg: 20px;
+      --border-radius-md: 16px;
+      --shadow-soft: 0 10px 30px rgba(15, 23, 42, 0.12);
+      --spacing: 20px;
+      --font-main: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font-main);
+      background: radial-gradient(circle at top, #e8f1ff 0, #f9fafb 55%, #edf2ff 100%);
+      color: var(--text-main);
+    }
+
+    .app {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .page {
+      display: none;
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .page--active {
+      display: block;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--border-radius-lg);
+      padding: 28px 24px 24px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .card--centered {
+      text-align: center;
+      padding-block: 60px;
+    }
+
+    .intro-text {
+      margin-top: 0;
+      margin-bottom: 16px;
+      line-height: 1.5;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .app-title {
+      margin: 0 0 24px;
+      font-size: 1.6rem;
+      letter-spacing: 0.04em;
+    }
+
+    .card-title {
+      margin: 0 0 16px;
+      font-size: 1.5rem;
+    }
+
+    .helper-text {
+      margin-top: 0;
+      margin-bottom: 18px;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 16px;
+    }
+
+    .square-button {
+      flex: 1;
+      border: none;
+      border-radius: var(--border-radius-md);
+      padding: 28px 18px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 1rem;
+      text-align: center;
+      cursor: pointer;
+      box-shadow: 0 6px 14px rgba(37, 99, 235, 0.16);
+      transition: transform 0.08s ease-out, box-shadow 0.08s ease-out,
+        background-color 0.12s ease-out;
+    }
+
+    .square-button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2);
+    }
+
+    .square-button:active {
+      transform: translateY(0);
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+    }
+
+    .square-button--file {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      margin-bottom: 18px;
+    }
+
+    .primary-button {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      margin-top: 8px;
+      padding: 12px 18px;
+      border-radius: 999px;
+      border: none;
+      background: var(--accent);
+      color: #ffffff;
+      font-weight: 600;
+      font-size: 1rem;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.22);
+      transition: background-color 0.12s ease-out, transform 0.06s ease-out,
+        box-shadow 0.06s ease-out, opacity 0.12s ease-out;
+    }
+
+    .primary-button:hover {
+      background-color: #1864ab;
+      transform: translateY(-1px);
+      box-shadow: 0 12px 24px rgba(15, 23, 42, 0.25);
+    }
+
+    .primary-button:active {
+      transform: translateY(0);
+      box-shadow: 0 5px 12px rgba(15, 23, 42, 0.25);
+    }
+
+    .primary-button:disabled {
+      opacity: 0.5;
+      cursor: default;
+      box-shadow: none;
+    }
+
+    .field-label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .text-input {
+      display: block;
+      width: 100%;
+      border-radius: 999px;
+      border: 1px solid #d0d7e2;
+      padding: 10px 15px;
+      font-size: 0.98rem;
+      outline: none;
+      transition: border-color 0.1s ease-out, box-shadow 0.1s ease-out;
+    }
+
+    .text-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+    }
+
+    .text-input::placeholder {
+      color: #a0aec0;
+    }
+
+    .image-preview {
+      margin-bottom: 12px;
+      border-radius: var(--border-radius-md);
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+    }
+
+    .image-preview img {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-height: 260px;
+      object-fit: cover;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 480px) {
+      .card {
+        padding-inline: 18px;
+      }
+
+      .app-title {
+        font-size: 1.4rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <!-- Page 1 -->
+    <section id="page-1" class="page page--active">
+      <div class="card">
+        <p class="intro-text">
+          With just one easy step you can make a street clean. Just take a picture of an area that is not clean,
+          tell us where it is, and we do the rest!
+        </p>
+        <h1 class="app-title">City-cleaner</h1>
+
+        <div class="button-row">
+          <!-- Only the "Take image" square as requested -->
+          <button id="btn-take-image" class="square-button">
+            Take image
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Page 2 - Upload image from library -->
+    <section id="page-2" class="page">
+      <div class="card">
+        <h2 class="card-title">Choose photo from library</h2>
+
+        <label class="square-button square-button--file">
+          <span>Choose image…</span>
+          <input type="file" id="image-input" accept="image/*" hidden />
+        </label>
+
+        <div id="image-preview" class="image-preview hidden">
+          <img id="preview-img" alt="Selected area" />
+        </div>
+
+        <button id="btn-to-page-3" class="primary-button" disabled>
+          Next
+        </button>
+      </div>
+    </section>
+
+    <!-- Page 3 - Address -->
+    <section id="page-3" class="page">
+      <div class="card">
+        <h2 class="card-title">Where is this?</h2>
+        <p class="helper-text">
+          Please write the address of the area you are at.
+        </p>
+
+        <label for="address-input" class="field-label">Address</label>
+        <input
+          id="address-input"
+          class="text-input"
+          type="text"
+          placeholder="Street, number, city"
+        />
+
+        <button id="btn-to-page-4" class="primary-button">
+          Next
+        </button>
+      </div>
+    </section>
+
+    <!-- Page 4 - Thank you -->
+    <section id="page-4" class="page">
+      <div class="card card--centered">
+        <h2 class="card-title">
+          Thank you for<br />
+          keeping the city<br />
+          clean!
+        </h2>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    function showPage(pageId) {
+      const pages = document.querySelectorAll(".page");
+      pages.forEach((page) => {
+        if (page.id === pageId) {
+          page.classList.add("page--active");
+        } else {
+          page.classList.remove("page--active");
+        }
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const btnTakeImage = document.getElementById("btn-take-image");
+      const imageInput = document.getElementById("image-input");
+      const imagePreview = document.getElementById("image-preview");
+      const previewImg = document.getElementById("preview-img");
+      const btnToPage3 = document.getElementById("btn-to-page-3");
+      const btnToPage4 = document.getElementById("btn-to-page-4");
+      const addressInput = document.getElementById("address-input");
+
+      let selectedImageFile = null;
+      let addressValue = "";
+
+      if (btnTakeImage) {
+        btnTakeImage.addEventListener("click", () => {
+          showPage("page-2");
+        });
+      }
+
+      if (imageInput) {
+        imageInput.addEventListener("change", () => {
+          const file = imageInput.files && imageInput.files[0];
+
+          if (!file) {
+            selectedImageFile = null;
+            if (btnToPage3) btnToPage3.disabled = true;
+            if (imagePreview) imagePreview.classList.add("hidden");
+            return;
+          }
+
+          selectedImageFile = file;
+
+          const url = URL.createObjectURL(file);
+          if (previewImg) {
+            previewImg.src = url;
+          }
+          if (imagePreview) {
+            imagePreview.classList.remove("hidden");
+          }
+          if (btnToPage3) {
+            btnToPage3.disabled = false;
+          }
+        });
+      }
+
+      if (btnToPage3) {
+        btnToPage3.addEventListener("click", () => {
+          if (!selectedImageFile) {
+            return;
+          }
+          showPage("page-3");
+          if (addressInput) {
+            addressInput.focus();
+          }
+        });
+      }
+
+      if (addressInput) {
+        addressInput.addEventListener("input", () => {
+          addressValue = addressInput.value.trim();
+        });
+      }
+
+      if (btnToPage4) {
+        btnToPage4.addEventListener("click", () => {
+          // Example validation if you want later:
+          // if (!addressValue) return;
+          showPage("page-4");
+        });
+      }
+    });
+  </script>
+</body>
+</html>
+
