@@ -284,6 +284,11 @@
       background: #f9fafb;
     }
 
+    .btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
     .thank-you-main {
       font-size: 1.3rem;
       font-weight: 700;
@@ -539,6 +544,11 @@
           return;
         }
 
+        var btn = submitButton;
+        var originalText = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = "Sender …";
+
         fetch("https://city-cleaner-connect.onrender.com/api/report", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -555,10 +565,14 @@
           })
           .then((data) => {
             console.log("Svar fra server:", data);
+            btn.disabled = false;
+            btn.textContent = originalText;
             goToPage(4);
           })
           .catch((err) => {
             console.error(err);
+            btn.disabled = false;
+            btn.textContent = originalText;
             var msg = "Noe gikk galt med å sende rapporten til serveren.";
             if (err && err.message) msg += " Detaljer: " + err.message;
             alert(msg);
