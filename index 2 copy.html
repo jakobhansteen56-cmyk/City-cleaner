@@ -547,7 +547,7 @@
         var btn = submitButton;
         var originalText = btn.textContent;
         btn.disabled = true;
-        btn.textContent = "Sender …";
+        btn.textContent = "Sending …";
 
         fetch("https://city-cleaner-connect.onrender.com/api/report", {
           method: "POST",
