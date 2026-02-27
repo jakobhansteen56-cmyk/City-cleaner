@@ -539,7 +539,7 @@
           return;
         }
 
-        fetch("http://localhost:3000/api/report", {
+        fetch("https://city-cleaner-connect.onrender.com/api/report", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -559,9 +559,9 @@
           })
           .catch((err) => {
             console.error(err);
-            alert(
-              "Noe gikk galt med å sende rapporten til serveren. Sjekk at serveren kjører."
-            );
+            var msg = "Noe gikk galt med å sende rapporten til serveren.";
+            if (err && err.message) msg += " Detaljer: " + err.message;
+            alert(msg);
           });
       });
     }
