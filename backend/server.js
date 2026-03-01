@@ -91,13 +91,6 @@ app.post("/api/report", async (req, res) => {
 
   console.log("Report received. Address:", address.substring(0, 80));
 
-  // Adressen må inneholde "Karlsruhe" (ellers avvis med en gang)
-  const addressLower = address.trim().toLowerCase();
-  if (!addressLower.includes("karlsruhe")) {
-    console.log("Rejected: address does not contain 'Karlsruhe'.");
-    return res.status(200).json({ success: false, reason: "not_karlsruhe" });
-  }
-
   // OpenAI-validering: kun hvis API-nøkkel er satt
   if (openai) {
     try {
