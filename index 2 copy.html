@@ -6,102 +6,94 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="Untitled-2.css" />
   <style>
-    :root {
-      --bg: #f3f4f6;
-      --card-bg: #ffffff;
-      --accent: #1e88e5;
-      --text-main: #111827;
-      --text-muted: #6b7280;
-      --border-soft: #d1d5db;
-      --radius-lg: 18px;
-      --radius-md: 12px;
-      --transition-fast: 0.18s ease;
-      --font-main: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-        sans-serif;
-    }
-
     * {
-      box-sizing: border-box;
       margin: 0;
       padding: 0;
+      box-sizing: border-box;
     }
 
     body {
+      font-family: "DM Sans", sans-serif;
       min-height: 100vh;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
-      font-family: var(--font-main);
-      background: var(--bg);
-      color: var(--text-main);
+      justify-content: center;
+      padding: 2rem;
+      background: linear-gradient(160deg, #f0f7f4 0%, #e8f5e9 50%, #c8e6c9 100%);
+      color: #1b3c34;
     }
 
     .app-shell {
+      max-width: 480px;
       width: 100%;
-      max-width: 420px;
-      background: var(--card-bg);
-      border-radius: 24px;
-      padding: 18px 18px 14px;
-      border: 1px solid rgba(148, 163, 184, 0.55);
-      box-shadow: 0 10px 26px rgba(15, 23, 42, 0.18);
+      text-align: center;
     }
 
     .screen {
       display: none;
-      min-height: 520px;
-      padding: 12px 4px 4px;
-      display: none;
+      min-height: 400px;
       flex-direction: column;
       justify-content: flex-start;
       gap: 20px;
+      animation: fadeIn 0.3s ease;
     }
 
     .screen.active {
       display: flex;
     }
 
-    .header {
-      text-align: center;
-      margin-bottom: 6px;
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    .app-title,
-    .page-title {
-      font-family: "Plus Jakarta Sans", var(--font-main);
+    .header {
+      text-align: center;
+      margin-bottom: 1rem;
     }
 
     .app-title {
-      font-size: 1.3rem;
+      font-size: 2.5rem;
       font-weight: 700;
-      margin-bottom: 4px;
+      margin-bottom: 2rem;
+      letter-spacing: -0.02em;
+      color: #2e5c4a;
     }
 
     .tagline {
-      font-size: 0.95rem;
-      color: var(--text-muted);
-      line-height: 1.4;
+      font-size: 1.25rem;
+      font-weight: 400;
+      line-height: 1.7;
+      margin-bottom: 3rem;
+      color: #3d5a52;
+      max-width: 420px;
+      margin-left: auto;
+      margin-right: auto;
     }
 
     .tagline-strong {
-      margin-top: 4px;
+      margin-top: 0;
     }
 
     .page-title {
-      font-size: 1.2rem;
-      font-weight: 700;
-      margin-bottom: 4px;
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      color: #2e5c4a;
     }
 
     .page-subtitle {
-      font-size: 0.9rem;
-      color: var(--text-muted);
+      font-size: 0.95rem;
+      color: #3d5a52;
+      margin-bottom: 1rem;
     }
 
     .main-area {
-      margin-top: 18px;
+      margin-top: 0;
       flex: 1;
       display: flex;
       flex-direction: column;
@@ -109,22 +101,20 @@
     }
 
     .square-button {
-      border-radius: var(--radius-md);
-      border: 2px solid var(--border-soft);
-      background: #f9fafb;
+      border-radius: 12px;
+      border: 2px solid #2e5c4a;
+      background: white;
       width: 100%;
-      min-height: 180px;
-      padding: 30px 18px;
+      min-height: auto;
+      padding: 1rem 2rem;
       text-align: center;
       cursor: pointer;
-      transition: background var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+      display: block;
       font-weight: 600;
       font-size: 1.1rem;
-      color: var(--text-main);
+      color: #2e5c4a;
+      font-family: inherit;
     }
 
     .square-button span {
@@ -132,27 +122,24 @@
     }
 
     .square-button-icon {
-      font-size: 1.6rem;
-      margin-bottom: 8px;
-      opacity: 0.85;
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      opacity: 0.9;
     }
 
     .square-button:hover {
-      background: #eef2ff;
-      border-color: #4f46e5;
-      transform: translateY(-1px);
-      box-shadow: 0 8px 18px rgba(79, 70, 229, 0.25);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(46, 92, 74, 0.2);
     }
 
     .square-button:active {
       transform: translateY(0);
-      box-shadow: none;
     }
 
     .footer {
-      margin-top: 10px;
-      font-size: 0.8rem;
-      color: var(--text-muted);
+      margin-top: 1.5rem;
+      font-size: 0.875rem;
+      color: #6b8a7d;
       text-align: center;
     }
 
@@ -161,50 +148,55 @@
     }
 
     .panel {
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border-soft);
-      padding: 16px 14px;
-      background: #f9fafb;
-    }
-
-    .panel h2 {
-      font-size: 1.05rem;
-      margin-bottom: 6px;
+      border-radius: 12px;
+      padding: 1.5rem;
+      background: rgba(255, 255, 255, 0.6);
+      margin-bottom: 1rem;
+      text-align: center;
     }
 
     .panel p {
-      font-size: 0.9rem;
-      color: var(--text-muted);
+      font-size: 0.95rem;
+      color: #3d5a52;
+      line-height: 1.6;
     }
 
     .file-input-wrapper {
-      border-radius: var(--radius-md);
-      padding: 14px 12px;
-      border: 1px dashed var(--border-soft);
-      background: #ffffff;
-      margin-top: 10px;
+      border: 2px dashed #2e5c4a;
+      border-radius: 12px;
+      padding: 3rem 2rem;
+      margin-top: 1rem;
+      margin-bottom: 1.5rem;
+      background: rgba(255, 255, 255, 0.6);
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
       display: flex;
       flex-direction: column;
       align-items: center;
+    }
+
+    .file-input-wrapper:hover {
+      background: rgba(255, 255, 255, 0.9);
+      border-color: #3d7a5c;
+    }
+
+    .file-input-wrapper.dragover {
+      background: rgba(200, 230, 201, 0.5);
+      border-color: #2e5c4a;
     }
 
     .file-label {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 7px 14px;
-      border-radius: 999px;
-      background: var(--accent);
+      padding: 0.75rem 1.5rem;
+      border-radius: 12px;
+      background: #2e5c4a;
       color: white;
-      font-size: 0.9rem;
+      font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
-    }
-
-    .file-hint {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      margin-top: 6px;
+      font-family: inherit;
     }
 
     .file-input {
@@ -212,116 +204,134 @@
     }
 
     .preview {
-      margin-top: 12px;
+      margin-top: 1rem;
       text-align: center;
     }
 
     .preview img {
       max-width: 100%;
-      max-height: 210px;
+      max-height: 200px;
       border-radius: 8px;
-      border: 1px solid var(--border-soft);
-      object-fit: cover;
+      margin-bottom: 0.5rem;
     }
 
     .preview-placeholder {
-      font-size: 0.8rem;
-      color: var(--text-muted);
+      font-size: 0.95rem;
+      color: #6b8a7d;
     }
 
     .input-card {
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border-soft);
-      padding: 14px 12px;
-      background: #f9fafb;
+      border-radius: 12px;
+      padding: 1rem 0;
+      background: transparent;
+      margin-bottom: 1rem;
+      text-align: center;
     }
 
     .input-card label {
       display: block;
-      font-size: 0.95rem;
+      font-size: 1rem;
       font-weight: 600;
-      margin-bottom: 4px;
+      margin-bottom: 0.5rem;
+      color: #2e5c4a;
     }
 
     .input-card small {
       display: block;
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      margin-bottom: 8px;
+      font-size: 0.9rem;
+      color: #3d5a52;
+      margin-bottom: 0.75rem;
     }
 
     .text-input {
       width: 100%;
-      padding: 9px 10px;
-      border-radius: 8px;
-      border: 1px solid var(--border-soft);
-      font-size: 0.95rem;
+      padding: 1rem 1.25rem;
+      border-radius: 12px;
+      border: 2px solid #2e5c4a;
+      font-size: 1rem;
       outline: none;
-      background: #ffffff;
+      background: white;
+      font-family: inherit;
     }
 
     .text-input:focus {
-      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(46, 92, 74, 0.2);
     }
 
     .actions {
-      margin-top: 12px;
+      margin-top: 1.5rem;
       display: flex;
-      justify-content: flex-end;
-      gap: 8px;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
     }
 
     .btn {
-      border-radius: 999px;
-      padding: 8px 18px;
+      padding: 1rem 2rem;
+      border-radius: 12px;
       border: none;
       cursor: pointer;
-      font-size: 0.9rem;
+      font-size: 1.1rem;
       font-weight: 600;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: transparent;
-      color: var(--text-main);
+      font-family: inherit;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(46, 92, 74, 0.2);
     }
 
     .btn-primary {
-      background: var(--accent);
-      color: #ffffff;
+      background: #2e5c4a;
+      color: white;
     }
 
     .btn-secondary {
-      border: 1px solid var(--border-soft);
-      background: #f9fafb;
+      background: white;
+      color: #2e5c4a;
+      border: 2px solid #2e5c4a;
     }
 
     .btn:disabled {
-      opacity: 0.7;
+      opacity: 0.6;
       cursor: not-allowed;
+      transform: none;
     }
 
     .thank-you-main {
-      font-size: 1.3rem;
+      font-size: 2.5rem;
       font-weight: 700;
-      margin-bottom: 4px;
+      margin-bottom: 1rem;
+      color: #2e5c4a;
+      letter-spacing: -0.02em;
     }
 
     .thank-you-sub {
-      font-size: 0.95rem;
-      color: var(--text-muted);
+      font-size: 1.5rem;
+      color: #3d5a52;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+    }
+
+    .page-indicator {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.875rem;
+      color: #6b8a7d;
     }
 
     @media (max-width: 480px) {
       body {
-        align-items: stretch;
+        padding: 1rem;
       }
       .app-shell {
-        border-radius: 0;
         max-width: 100%;
-        height: 100vh;
       }
       .screen {
-        min-height: calc(100vh - 50px);
+        min-height: 300px;
       }
     }
   </style>
@@ -362,11 +372,11 @@
 
       <div class="panel">
         <p>
-          Select a photo from your device that shows the area you want to report.
+          Click or drag an image here. PNG, JPG, or GIF.
         </p>
-        <div class="file-input-wrapper">
+        <div class="file-input-wrapper" id="upload-area">
           <label for="image-input" class="file-label">
-            <span>📂</span>
+            <span>📁</span>
             <span>Choose photo</span>
           </label>
           <input
@@ -414,7 +424,7 @@
           id="address-input"
           type="text"
           class="text-input"
-          placeholder="Street, number, and city"
+          placeholder="Enter the address where the image was taken"
         />
       </div>
 
@@ -443,7 +453,7 @@
           Thank you for keeping the city clean!
         </div>
         <p class="thank-you-sub">
-          Your report helps us find and clean areas that need attention.
+          Your report has been submitted successfully.
         </p>
       </div>
 
@@ -459,6 +469,8 @@
     </section>
   </div>
 
+  <span class="page-indicator" id="page-indicator">1 of 4</span>
+
   <script>
     let lastImageData = null;
 
@@ -467,6 +479,8 @@
       screens.forEach((s) => s.classList.remove("active"));
       const target = document.getElementById("page-" + n);
       if (target) target.classList.add("active");
+      const indicator = document.getElementById("page-indicator");
+      if (indicator) indicator.textContent = n + " of 4";
     }
 
     function restartFlow() {
@@ -493,6 +507,32 @@
 
     const imageInput = document.getElementById("image-input");
     const imagePreview = document.getElementById("image-preview");
+    const uploadArea = document.getElementById("upload-area");
+
+    if (imageInput && uploadArea) {
+      uploadArea.addEventListener("click", function (e) {
+        if (e.target.closest("label")) return;
+        imageInput.click();
+      });
+      uploadArea.addEventListener("dragover", function (e) {
+        e.preventDefault();
+        uploadArea.classList.add("dragover");
+      });
+      uploadArea.addEventListener("dragleave", function () {
+        uploadArea.classList.remove("dragover");
+      });
+      uploadArea.addEventListener("drop", function (e) {
+        e.preventDefault();
+        uploadArea.classList.remove("dragover");
+        const file = e.dataTransfer.files && e.dataTransfer.files[0];
+        if (file && file.type.startsWith("image/")) {
+          const dt = new DataTransfer();
+          dt.items.add(file);
+          imageInput.files = dt.files;
+          imageInput.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+      });
+    }
 
     if (imageInput) {
       imageInput.addEventListener("change", function () {
