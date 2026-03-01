@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <title>City-cleaner</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="Untitled-2.css" />
   <style>
     :root {
@@ -61,8 +64,13 @@
     }
 
     .header {
-      text-align: left;
+      text-align: center;
       margin-bottom: 6px;
+    }
+
+    .app-title,
+    .page-title {
+      font-family: "Plus Jakarta Sans", var(--font-main);
     }
 
     .app-title {
@@ -175,6 +183,9 @@
       border: 1px dashed var(--border-soft);
       background: #ffffff;
       margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
     .file-label {
@@ -364,9 +375,6 @@
             accept="image/*"
             class="file-input"
           />
-          <div class="file-hint">
-            The image is only used in this prototype and is not sent anywhere.
-          </div>
 
           <div id="image-preview" class="preview">
             <div class="preview-placeholder">
@@ -386,7 +394,7 @@
       </div>
 
       <div class="footer">
-        Choose photo from library
+        <span>City-cleaner</span>
       </div>
     </section>
 
@@ -408,15 +416,6 @@
           class="text-input"
           placeholder="Street, number, and city"
         />
-      </div>
-
-      <div class="input-card">
-        <label>Other options (from mockup)</label>
-        <small>In a later version, you could also:</small>
-        <ul style="font-size:0.85rem; color:var(--text-muted); margin-left:18px; margin-top:4px;">
-          <li>Share GPS-position on phone</li>
-          <li>Choose position on map</li>
-        </ul>
       </div>
 
       <div class="actions">
@@ -534,13 +533,13 @@
         const addressValue = addressInput.value.trim();
 
         if (!lastImageData) {
-          alert("Du må velge et bilde på steg 2 før du går videre.");
+          alert("Please select an image in step 2 before continuing.");
           goToPage(2);
           return;
         }
 
         if (!addressValue) {
-          alert("Du må skrive inn en adresse.");
+          alert("Please enter an address.");
           return;
         }
 
@@ -560,7 +559,7 @@
           .then((res) => {
             if (!res.ok) {
               return res.json().catch(() => ({})).then((data) => {
-                var errMsg = "Server svarte med feil: " + res.status;
+                var errMsg = "Server responded with error: " + res.status;
                 if (data && data.message) errMsg += " – " + data.message;
                 throw new Error(errMsg);
               });
@@ -568,16 +567,16 @@
             return res.json();
           })
           .then((data) => {
-            console.log("Svar fra server:", data);
+            console.log("Server response:", data);
             btn.disabled = false;
             btn.textContent = originalText;
             if (data.success === false && data.reason) {
               var reasonMsg = "";
-              if (data.reason === "not_outdoor") reasonMsg = "Rapporten ble ikke lagret: Bildet viser ikke et uteområde (det er innendørs).";
-              else if (data.reason === "not_street") reasonMsg = "Rapporten ble ikke lagret: Bildet viser ikke en gate.";
-              else if (data.reason === "too_clean") reasonMsg = "Rapporten ble ikke lagret: Området er for rent (rating under 2).";
-              else if (data.reason === "not_karlsruhe") reasonMsg = "Rapporten ble ikke lagret: Adressen er ikke i Karlsruhe.";
-              else reasonMsg = "Rapporten ble ikke lagret.";
+              if (data.reason === "not_outdoor") reasonMsg = "Report was not saved: The image does not show an outdoor area (it appears to be indoors).";
+              else if (data.reason === "not_street") reasonMsg = "Report was not saved: The image does not show a street.";
+              else if (data.reason === "too_clean") reasonMsg = "Report was not saved: The area is too clean (rating below 2).";
+              else if (data.reason === "not_karlsruhe") reasonMsg = "Report was not saved: The address is not in Karlsruhe.";
+              else reasonMsg = "Report was not saved.";
               alert(reasonMsg);
               return;
             }
@@ -587,8 +586,8 @@
             console.error(err);
             btn.disabled = false;
             btn.textContent = originalText;
-            var msg = "Noe gikk galt med å sende rapporten til serveren.";
-            if (err && err.message) msg += " Detaljer: " + err.message;
+            var msg = "Something went wrong while sending the report to the server.";
+            if (err && err.message) msg += " Details: " + err.message;
             alert(msg);
           });
       });
