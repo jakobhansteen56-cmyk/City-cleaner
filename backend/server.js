@@ -96,13 +96,27 @@ app.post("/api/report", async (req, res) => {
     try {
       console.log("Running OpenAI validation (Karlsruhe, street, litter).");
       // 1) Er adressen i Karlsruhe?
-      const inKarlsruhe = await checkAddressInKarlsruhe(address);
+      let inKarlsruhe;
+      try {
+        inKarlsruhe = await checkAddressInKarlsruhe(address);
+      } catch (err) {
+        console.error("OpenAI validation error (Karlsruhe check):", err.message || err);
+        throw err;
+      }
       if (!inKarlsruhe) {
         return res.status(200).json({ success: false, reason: "not_karlsruhe" });
       }
 
       // 2) Er bildet en gate, og hvor mye søppel (0–10)?
-      const { isStreet, litterRating } = await checkStreetAndLitter(imageData);
+      let isStreet, litterRating;
+      try {
+        const result = await checkStreetAndLitter(imageData);
+        isStreet = result.isStreet;
+        litterRating = result.litterRating;
+      } catch (err) {
+        console.error("OpenAI validation error (image/street check):", err.message || err);
+        throw err;
+      }
       if (!isStreet) {
         return res.status(200).json({ success: false, reason: "not_street" });
       }
