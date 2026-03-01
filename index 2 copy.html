@@ -559,7 +559,11 @@
         })
           .then((res) => {
             if (!res.ok) {
-              throw new Error("Server svarte med feil: " + res.status);
+              return res.json().catch(() => ({})).then((data) => {
+                var errMsg = "Server svarte med feil: " + res.status;
+                if (data && data.message) errMsg += " – " + data.message;
+                throw new Error(errMsg);
+              });
             }
             return res.json();
           })
