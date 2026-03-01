@@ -573,7 +573,8 @@
             btn.textContent = originalText;
             if (data.success === false && data.reason) {
               var reasonMsg = "";
-              if (data.reason === "not_street") reasonMsg = "Rapporten ble ikke lagret: Bildet viser ikke en gate.";
+              if (data.reason === "not_outdoor") reasonMsg = "Rapporten ble ikke lagret: Bildet viser ikke et uteområde (det er innendørs).";
+              else if (data.reason === "not_street") reasonMsg = "Rapporten ble ikke lagret: Bildet viser ikke en gate.";
               else if (data.reason === "too_clean") reasonMsg = "Rapporten ble ikke lagret: Området er for rent (rating under 2).";
               else if (data.reason === "not_karlsruhe") reasonMsg = "Rapporten ble ikke lagret: Adressen er ikke i Karlsruhe.";
               else reasonMsg = "Rapporten ble ikke lagret.";

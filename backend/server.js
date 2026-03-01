@@ -50,7 +50,7 @@ async function checkAddressInKarlsruhe(address) {
   return answer.startsWith("yes");
 }
 
-/** Sjekker om bildet viser en gate og rater søppel 0–10. Returnerer { isStreet, litterRating }. */
+/** Sjekker om bildet viser et uteområde (ikke innendørs) og rater søppel 0–10. Returnerer { isOutdoor, litterRating }. */
 async function checkStreetAndLitter(imageData) {
   const completion = await openai.chat.completions.create({
     model: "gpt-4o-mini",
@@ -61,8 +61,8 @@ async function checkStreetAndLitter(imageData) {
           {
             type: "text",
             text: `Look at this image. Answer with exactly two lines:
-1) Is the area shown a street or road (Gate/Straße)? Write "yes" or "no".
-2) Rate how much litter/garbage is visible on the street from 0 (no litter) to 10 (extremely littered). Write only a single number 0-10.`,
+1) Does this image show an outdoor area (uteområde), or is it obviously indoors (inne)? Answer "yes" if outdoor, "no" if obviously indoors. Write only "yes" or "no".
+2) Rate how much litter/garbage is visible in the scene from 0 (no litter) to 10 (extremely littered). Write only a single number 0-10.`,
           },
           {
             type: "image_url",
@@ -75,10 +75,10 @@ async function checkStreetAndLitter(imageData) {
   });
   const text = (completion.choices[0]?.message?.content || "").trim();
   const lines = text.split(/\r?\n/).map((s) => s.trim());
-  const isStreet = (lines[0] || "").toLowerCase().startsWith("yes");
+  const isOutdoor = (lines[0] || "").toLowerCase().startsWith("yes");
   const numMatch = (lines[1] || lines[0] || "").match(/\d+/);
   const litterRating = numMatch ? parseInt(numMatch[0], 10) : 0;
-  return { isStreet, litterRating };
+  return { isOutdoor, litterRating };
 }
 
 // Tar imot bilde (imageData) + adresse
@@ -107,18 +107,18 @@ app.post("/api/report", async (req, res) => {
         return res.status(200).json({ success: false, reason: "not_karlsruhe" });
       }
 
-      // 2) Er bildet en gate, og hvor mye søppel (0–10)?
-      let isStreet, litterRating;
+      // 2) Er bildet et uteområde, og hvor mye søppel (0–10)?
+      let isOutdoor, litterRating;
       try {
         const result = await checkStreetAndLitter(imageData);
-        isStreet = result.isStreet;
+        isOutdoor = result.isOutdoor;
         litterRating = result.litterRating;
       } catch (err) {
         console.error("OpenAI validation error (image/street check):", err.message || err);
         throw err;
       }
-      if (!isStreet) {
-        return res.status(200).json({ success: false, reason: "not_street" });
+      if (!isOutdoor) {
+        return res.status(200).json({ success: false, reason: "not_outdoor" });
       }
       if (litterRating < 2) {
         return res.status(200).json({ success: false, reason: "too_clean" });
