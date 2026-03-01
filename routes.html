@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Route planner – City-cleaner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "DM Sans", sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(160deg, #f0f7f4 0%, #e8f5e9 50%, #c8e6c9 100%);
+      color: #1b3c34;
+      padding: 1.5rem;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #2e5c4a;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
+    }
+
+    .subtitle {
+      font-size: 1rem;
+      color: #3d5a52;
+      margin-bottom: 1.5rem;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.85);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+      border: 1px solid rgba(46, 92, 74, 0.2);
+    }
+
+    .card h2 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #2e5c4a;
+      margin-bottom: 0.75rem;
+    }
+
+    .address-list {
+      list-style: none;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+
+    .address-list li {
+      padding: 0.5rem 0.75rem;
+      margin-bottom: 0.35rem;
+      background: #f0f7f4;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      color: #2e5c4a;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .address-list li .num {
+      flex-shrink: 0;
+      width: 1.5rem;
+      height: 1.5rem;
+      border-radius: 50%;
+      background: #2e5c4a;
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .address-list.empty li {
+      list-style: none;
+    }
+
+    .address-list.empty {
+      padding: 1rem;
+      color: #6b8a7d;
+      font-size: 0.95rem;
+    }
+
+    .add-address {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+
+    .add-address input {
+      flex: 1;
+      padding: 0.6rem 0.75rem;
+      border: 2px solid #2e5c4a;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-family: inherit;
+    }
+
+    .add-address input:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(46, 92, 74, 0.2);
+    }
+
+    .btn {
+      padding: 0.6rem 1.25rem;
+      border-radius: 10px;
+      border: none;
+      font-size: 0.95rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(46, 92, 74, 0.25);
+    }
+
+    .btn-primary {
+      background: #2e5c4a;
+      color: white;
+    }
+
+    .btn-secondary {
+      background: white;
+      color: #2e5c4a;
+      border: 2px solid #2e5c4a;
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .map-wrap {
+      border-radius: 12px;
+      overflow: hidden;
+      border: 2px solid #2e5c4a;
+      background: #e8f5e9;
+      min-height: 400px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #3d5a52;
+      font-size: 1rem;
+    }
+
+    #map {
+      width: 100%;
+      height: 400px;
+      display: none;
+    }
+
+    .map-placeholder {
+      padding: 2rem;
+      text-align: center;
+    }
+
+    .error-msg {
+      background: rgba(198, 40, 40, 0.1);
+      color: #c62828;
+      padding: 0.75rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      margin-top: 0.75rem;
+    }
+
+    .route-order-note {
+      font-size: 0.85rem;
+      color: #6b8a7d;
+      margin-top: 0.5rem;
+    }
+
+    @media (max-width: 600px) {
+      body { padding: 1rem; }
+      .add-address { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Route planner</h1>
+    <p class="subtitle">Shortest route between City-cleaner report addresses</p>
+
+    <div class="card">
+      <h2>Addresses</h2>
+      <p class="route-order-note">Addresses from the database are listed below. Add more if needed, then click "Plan route" to see the optimized route on the map.</p>
+      <ul id="address-list" class="address-list empty">
+        <li>Loading addresses…</li>
+      </ul>
+      <div class="add-address">
+        <input type="text" id="new-address" placeholder="Add another address…" />
+        <button type="button" class="btn btn-secondary" id="btn-add-address">Add</button>
+      </div>
+      <div style="margin-top: 1rem;">
+        <button type="button" class="btn btn-primary" id="btn-plan-route">Plan route</button>
+      </div>
+      <div id="route-error" class="error-msg" style="display: none;"></div>
+    </div>
+
+    <div class="card">
+      <h2>Route (optimized order)</h2>
+      <ul id="route-order-list" class="address-list empty">
+        <li>Plan a route to see the order here.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Map</h2>
+      <div class="map-wrap">
+        <div id="map-placeholder" class="map-placeholder">
+          Plan a route to show it on the map.
+        </div>
+        <div id="map"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = (window.location.protocol === "file:" || window.location.origin === "null")
+      ? "https://city-cleaner-connect.onrender.com"
+      : window.location.origin;
+    let addresses = [];
+    let map = null;
+    let googleMapsReady = false;
+
+    const addressListEl = document.getElementById("address-list");
+    const routeOrderListEl = document.getElementById("route-order-list");
+    const newAddressInput = document.getElementById("new-address");
+    const btnAddAddress = document.getElementById("btn-add-address");
+    const btnPlanRoute = document.getElementById("btn-plan-route");
+    const routeErrorEl = document.getElementById("route-error");
+    const mapEl = document.getElementById("map");
+    const mapPlaceholder = document.getElementById("map-placeholder");
+
+    function renderAddressList() {
+      if (addresses.length === 0) {
+        addressListEl.innerHTML = "<li>No addresses yet. Add one below or ensure reports exist in the database.</li>";
+        addressListEl.classList.add("empty");
+        return;
+      }
+      addressListEl.classList.remove("empty");
+      addressListEl.innerHTML = addresses
+        .map(
+          (addr, i) =>
+            "<li><span class=\"num\">" + (i + 1) + "</span><span>" + escapeHtml(addr) + "</span></li>"
+        )
+        .join("");
+    }
+
+    function escapeHtml(s) {
+      const div = document.createElement("div");
+      div.textContent = s;
+      return div.innerHTML;
+    }
+
+    function renderRouteOrder(orderedAddresses) {
+      if (!orderedAddresses || orderedAddresses.length === 0) {
+        routeOrderListEl.innerHTML = "<li>Plan a route to see the order here.</li>";
+        routeOrderListEl.classList.add("empty");
+        return;
+      }
+      routeOrderListEl.classList.remove("empty");
+      routeOrderListEl.innerHTML = orderedAddresses
+        .map(
+          (addr, i) =>
+            "<li><span class=\"num\">" + (i + 1) + "</span><span>" + escapeHtml(addr) + "</span></li>"
+        )
+        .join("");
+    }
+
+    async function loadAddresses() {
+      try {
+        const res = await fetch(API_BASE + "/api/report");
+        if (!res.ok) throw new Error("Failed to load reports");
+        const reports = await res.json();
+        addresses = reports.map(function (r) { return (r.address || "").trim(); }).filter(Boolean);
+        const seen = {};
+        addresses = addresses.filter(function (a) {
+          const key = a.toLowerCase();
+          if (seen[key]) return false;
+          seen[key] = true;
+          return true;
+        });
+      } catch (e) {
+        console.error(e);
+        addresses = [];
+        addressListEl.innerHTML = "<li>Could not load addresses. Is the backend running?</li>";
+        addressListEl.classList.add("empty");
+        return;
+      }
+      renderAddressList();
+    }
+
+    function loadGoogleMaps(apiKey) {
+      if (!apiKey) {
+        mapPlaceholder.textContent = "Google Maps API key not set. Add GOOGLE_MAPS_API_KEY to the server and enable Routes API and Maps JavaScript API.";
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = "https://maps.googleapis.com/maps/api/js?key=" + encodeURIComponent(apiKey) + "&libraries=geometry&callback=initMap";
+      script.async = true;
+      script.defer = true;
+      window.initMap = function () {
+        googleMapsReady = true;
+        map = new google.maps.Map(mapEl, {
+          center: { lat: 49.0069, lng: 8.4037 },
+          zoom: 12,
+        });
+      };
+      document.head.appendChild(script);
+    }
+
+    function drawRoutesApiResult(data, addressList) {
+      if (!map || !google.maps.geometry || !data.routes || !data.routes[0]) return;
+      const route = data.routes[0];
+      const encoded = route.polyline && route.polyline.encodedPolyline;
+      if (encoded) {
+        const path = google.maps.geometry.encoding.decodePath(encoded);
+        const polyline = new google.maps.Polyline({
+          path: path,
+          strokeColor: "#2e5c4a",
+          strokeOpacity: 1,
+          strokeWeight: 5,
+          map: map,
+        });
+        const bounds = new google.maps.LatLngBounds();
+        path.forEach(function (p) { bounds.extend(p); });
+        if (route.legs && route.legs.length > 0) {
+          for (var i = 0; i < route.legs.length; i++) {
+            var leg = route.legs[i];
+            if (i === 0 && leg.startLocation && leg.startLocation.latLng) {
+              var start = { lat: leg.startLocation.latLng.latitude, lng: leg.startLocation.latLng.longitude };
+              bounds.extend(start);
+              new google.maps.Marker({ position: start, map: map });
+            }
+            if (leg.endLocation && leg.endLocation.latLng) {
+              var end = { lat: leg.endLocation.latLng.latitude, lng: leg.endLocation.latLng.longitude };
+              bounds.extend(end);
+              new google.maps.Marker({ position: end, map: map });
+            }
+          }
+        }
+        map.fitBounds(bounds, 40);
+      }
+    }
+
+    btnAddAddress.addEventListener("click", function () {
+      const val = newAddressInput.value.trim();
+      if (!val) return;
+      addresses.push(val);
+      newAddressInput.value = "";
+      renderAddressList();
+    });
+
+    newAddressInput.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") btnAddAddress.click();
+    });
+
+    btnPlanRoute.addEventListener("click", async function () {
+      routeErrorEl.style.display = "none";
+      routeErrorEl.textContent = "";
+      if (addresses.length < 2) {
+        routeErrorEl.textContent = "Add at least two addresses to plan a route.";
+        routeErrorEl.style.display = "block";
+        return;
+      }
+      btnPlanRoute.disabled = true;
+      try {
+        const res = await fetch(API_BASE + "/api/route", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ addresses: addresses }),
+        });
+        const data = await res.json().catch(function () { return {}; });
+        if (!res.ok) {
+          routeErrorEl.textContent = data.message || data.error || "Route request failed.";
+          routeErrorEl.style.display = "block";
+          return;
+        }
+        var order = [];
+        if (data.routes && data.routes[0]) {
+          var route = data.routes[0];
+          if (route.optimizedIntermediateWaypointIndex && route.optimizedIntermediateWaypointIndex.length > 0) {
+            order.push(addresses[0]);
+            for (var i = 0; i < route.optimizedIntermediateWaypointIndex.length; i++) {
+              var idx = route.optimizedIntermediateWaypointIndex[i];
+              order.push(addresses[idx + 1]);
+            }
+            order.push(addresses[addresses.length - 1]);
+          } else {
+            order = addresses.slice();
+          }
+        }
+        if (order.length > 0) renderRouteOrder(order);
+        else renderRouteOrder(addresses);
+
+        if (googleMapsReady && map) {
+          drawRoutesApiResult(data, addresses);
+          mapPlaceholder.style.display = "none";
+          mapEl.style.display = "block";
+        }
+      } finally {
+        btnPlanRoute.disabled = false;
+      }
+    });
+
+    (async function () {
+      await loadAddresses();
+      const configRes = await fetch(API_BASE + "/api/config");
+      const config = await configRes.json().catch(function () { return {}; });
+      loadGoogleMaps(config.googleMapsApiKey || "");
+    })();
+  </script>
+</body>
+</html>
