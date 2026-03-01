@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 const { Pool } = require("pg");
+const OpenAI = require("openai").default;
 
 const app = express();
 
@@ -10,6 +11,13 @@ app.use(cors());
 
 // Gjør at serveren kan lese JSON-data i forespørsler
 app.use(express.json({ limit: "5mb" })); // 5 MB holder til små bilder i base64
+
+// OpenAI-klient (brukes kun hvis OPENAI_API_KEY er satt)
+let openai = null;
+if (process.env.OPENAI_API_KEY) {
+  openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  console.log("OpenAI validation enabled via OPENAI_API_KEY.");
+}
 
 // Koble til Postgres hvis DATABASE_URL er satt, ellers bruk minne
 let pool = null;
@@ -26,6 +34,53 @@ if (process.env.DATABASE_URL) {
 // Midlertidig lagring i minne (fallback og for lokal testing)
 const reports = [];
 
+/** Sjekker om adressen er i Karlsruhe (OpenAI tekstkall). Returnerer true/false. */
+async function checkAddressInKarlsruhe(address) {
+  const completion = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages: [
+      {
+        role: "user",
+        content: `Is the following address in Karlsruhe, Germany? Answer only "yes" or "no". Address: ${address}`,
+      },
+    ],
+    max_tokens: 10,
+  });
+  const answer = (completion.choices[0]?.message?.content || "").trim().toLowerCase();
+  return answer.startsWith("yes");
+}
+
+/** Sjekker om bildet viser en gate og rater søppel 0–10. Returnerer { isStreet, litterRating }. */
+async function checkStreetAndLitter(imageData) {
+  const completion = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages: [
+      {
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: `Look at this image. Answer with exactly two lines:
+1) Is the area shown a street or road (Gate/Straße)? Write "yes" or "no".
+2) Rate how much litter/garbage is visible on the street from 0 (no litter) to 10 (extremely littered). Write only a single number 0-10.`,
+          },
+          {
+            type: "image_url",
+            image_url: { url: imageData },
+          },
+        ],
+      },
+    ],
+    max_tokens: 50,
+  });
+  const text = (completion.choices[0]?.message?.content || "").trim();
+  const lines = text.split(/\r?\n/).map((s) => s.trim());
+  const isStreet = (lines[0] || "").toLowerCase().startsWith("yes");
+  const numMatch = (lines[1] || lines[0] || "").match(/\d+/);
+  const litterRating = numMatch ? parseInt(numMatch[0], 10) : 0;
+  return { isStreet, litterRating };
+}
+
 // Tar imot bilde (imageData) + adresse
 app.post("/api/report", async (req, res) => {
   const { imageData, address } = req.body;
@@ -34,6 +89,46 @@ app.post("/api/report", async (req, res) => {
     return res.status(400).json({ error: "Missing imageData or address" });
   }
 
+  console.log("Report received. Address:", address.substring(0, 80));
+
+  // Adressen må inneholde "Karlsruhe" (ellers avvis med en gang)
+  const addressLower = address.trim().toLowerCase();
+  if (!addressLower.includes("karlsruhe")) {
+    console.log("Rejected: address does not contain 'Karlsruhe'.");
+    return res.status(200).json({ success: false, reason: "not_karlsruhe" });
+  }
+
+  // OpenAI-validering: kun hvis API-nøkkel er satt
+  if (openai) {
+    try {
+      console.log("Running OpenAI validation (Karlsruhe, street, litter).");
+      // 1) Er adressen i Karlsruhe?
+      const inKarlsruhe = await checkAddressInKarlsruhe(address);
+      if (!inKarlsruhe) {
+        return res.status(200).json({ success: false, reason: "not_karlsruhe" });
+      }
+
+      // 2) Er bildet en gate, og hvor mye søppel (0–10)?
+      const { isStreet, litterRating } = await checkStreetAndLitter(imageData);
+      if (!isStreet) {
+        return res.status(200).json({ success: false, reason: "not_street" });
+      }
+      if (litterRating < 2) {
+        return res.status(200).json({ success: false, reason: "too_clean" });
+      }
+    } catch (err) {
+      console.error("OpenAI validation error:", err);
+      return res.status(500).json({
+        success: false,
+        error: "Validation failed",
+        message: err.message || "OpenAI request failed",
+      });
+    }
+  } else {
+    console.log("OpenAI validation skipped (OPENAI_API_KEY not set).");
+  }
+
+  console.log("All validations passed. Saving report.");
   const report = {
     id: reports.length + 1,
     imageData,
