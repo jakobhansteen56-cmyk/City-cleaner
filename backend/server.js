@@ -129,7 +129,7 @@ app.post("/api/report", async (req, res) => {
       if (!isOutdoor) {
         return res.status(200).json({ success: false, reason: "not_outdoor" });
       }
-      if (litterRating < 2) {
+      if (litterRating < 3) {
         return res.status(200).json({ success: false, reason: "too_clean" });
       }
     } catch (err) {
