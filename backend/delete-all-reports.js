@@ -1,6 +1,20 @@
 /**
- * One-off script: deletes all rows from the reports table.
- * Run from backend folder: node delete-all-reports.js
+ * delete-all-reports.js
+ *
+ * File overview:
+ * - This is a small helper script, not part of the running backend.
+ * - It connects directly to the Postgres database and deletes
+ *   all rows from the "reports" table.
+ * - Use it when you want to reset the database manually (for testing or demos).
+ *
+ * How to run:
+ * - Open a terminal in the backend folder:
+ *     cd backend
+ * - Make sure .env contains a valid DATABASE_URL for your Postgres instance.
+ * - Run:
+ *     node delete-all-reports.js
+ *
+ * After running, the "reports" table will be empty.
  */
 require("dotenv").config();
 const { Pool } = require("pg");

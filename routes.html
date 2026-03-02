@@ -1,4 +1,24 @@
 <!DOCTYPE html>
+<!--
+  routes.html
+
+  File overview:
+  - This page is the "Route planner" for City-cleaner.
+  - It is intended for the people who will walk between reported locations
+    and clean them.
+  - It does three main things:
+      1) Fetches all saved reports from the backend (GET /api/report).
+      2) Sends the list of addresses to the backend route endpoint
+         (POST /api/route), which calls the Google Routes API to compute
+         an optimized walking route in Karlsruhe.
+      3) Draws the resulting route on a Google Map and shows the ordered
+         list of addresses, including the photo for each address if available.
+  - After a route has been planned, it also clears all reports from the
+    database (DELETE /api/report), so the next run starts fresh.
+
+  This file is a pure HTML/CSS + vanilla JavaScript page and can be served
+  both locally from the backend server and from the Render Static Site.
+-->
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -288,11 +308,14 @@
   </div>
 
   <script>
+    // Choose the correct base URL for the backend:
+    // - If this file is opened directly from disk (file://), use the Render URL.
+    // - If it is served from the same origin as the backend, use window.location.origin.
     const API_BASE = (window.location.protocol === "file:" || window.location.origin === "null")
       ? "https://city-cleaner-connect.onrender.com"
       : window.location.origin;
     let addresses = [];
-    let entries = []; // { address, imageData | null }
+    let entries = []; // Array of { address, imageData | null } from /api/report
     let map = null;
     let googleMapsReady = false;
 
@@ -303,6 +326,7 @@
     const mapEl = document.getElementById("map");
     const mapPlaceholder = document.getElementById("map-placeholder");
 
+    // Render the list of addresses that were loaded from the backend.
     function renderAddressList() {
       if (addresses.length === 0) {
         addressListEl.innerHTML = "<li>No addresses yet. Ensure reports exist in the database.</li>";
@@ -318,12 +342,16 @@
         .join("");
     }
 
+    // Helper to escape HTML special characters in strings before inserting
+    // them into innerHTML (prevents broken HTML and XSS issues).
     function escapeHtml(s) {
       const div = document.createElement("div");
       div.textContent = s;
       return div.innerHTML;
     }
 
+    // Render the ordered list of addresses (the optimized route), including
+    // the small photo thumbnail when available.
     function renderRouteOrder(orderedAddresses) {
       if (!orderedAddresses || orderedAddresses.length === 0) {
         routeOrderListEl.innerHTML = "<li>Plan a route to see the order here.</li>";
@@ -347,6 +375,7 @@
         .join("");
     }
 
+    // Load all current reports from the backend and build the "addresses" list.
     async function loadAddresses() {
       try {
         const res = await fetch(API_BASE + "/api/report");
@@ -379,6 +408,7 @@
       renderAddressList();
     }
 
+    // Dynamically load the Google Maps JavaScript API script and create the map.
     function loadGoogleMaps(apiKey) {
       if (!apiKey) {
         mapPlaceholder.textContent = "Google Maps API key not set. Add GOOGLE_MAPS_API_KEY to the server and enable Routes API and Maps JavaScript API.";
@@ -398,6 +428,7 @@
       document.head.appendChild(script);
     }
 
+    // Draw the route returned by the Google Routes API into the Google Map.
     function drawRoutesApiResult(data, addressList) {
       if (!map || !google.maps.geometry || !data.routes || !data.routes[0]) return;
       const route = data.routes[0];
@@ -432,6 +463,8 @@
       }
     }
 
+    // When the user clicks "Plan route", send the addresses to the backend,
+    // render the optimized order list, and draw the route on the map.
     btnPlanRoute.addEventListener("click", async function () {
       routeErrorEl.style.display = "none";
       routeErrorEl.textContent = "";
@@ -476,8 +509,9 @@
           mapEl.style.display = "block";
         }
 
-        // Etter at ruten er planlagt: slett alle rapport-adresser i databasen.
-        // Vi beholder likevel adressene i "order" og på kartet i denne visningen.
+        // After the route has been successfully planned:
+        // - Delete all reports in the database so the next planning run starts fresh.
+        // - Keep the addresses in "order" and on the map in this view (no reload).
         try {
           await fetch(API_BASE + "/api/report", { method: "DELETE" });
           // Tøm lokale adresser og oppdater addresselista, slik at nye kall starter fra tomt.
@@ -496,6 +530,7 @@
     const lightboxImg = document.getElementById("lightbox-image");
     const lightboxClose = document.getElementById("lightbox-close");
 
+    // Simple full-screen overlay to show the address photo in a larger size.
     function openLightbox(src) {
       if (!lightboxEl || !lightboxImg) return;
       lightboxImg.src = src;
@@ -508,6 +543,7 @@
       lightboxEl.classList.add("hidden");
     }
 
+    // Clicking on a thumbnail in the route order list opens the lightbox.
     if (routeOrderListEl) {
       routeOrderListEl.addEventListener("click", function (e) {
         const img = e.target.closest(".address-photo");
@@ -517,6 +553,7 @@
       });
     }
 
+    // Clicking the dark background closes the lightbox.
     if (lightboxEl) {
       lightboxEl.addEventListener("click", function (e) {
         if (e.target === lightboxEl) {
@@ -525,10 +562,13 @@
       });
     }
 
+    // Clicking the "×" button closes the lightbox.
     if (lightboxClose) {
       lightboxClose.addEventListener("click", closeLightbox);
     }
 
+    // On initial load: fetch addresses, then load the Google Maps API with the
+    // key provided by the backend config endpoint.
     (async function () {
       await loadAddresses();
       const configRes = await fetch(API_BASE + "/api/config");

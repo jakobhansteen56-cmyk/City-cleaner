@@ -1,12 +1,32 @@
 <!DOCTYPE html>
+<!--
+  index.html
+
+  File overview:
+  - This is a very small entry-point HTML file for the City-cleaner frontend.
+  - It immediately redirects the browser to "index 2 copy.html", which contains
+    the full multi-step City-cleaner app (upload image + address).
+  - The redirect is done both via a meta refresh tag and a small JavaScript snippet,
+    so it works in most browsers.
+
+  In production on Render, this file is what users reach at:
+    https://<your-static-site>.onrender.com/
+  and they are then forwarded to the main app.
+-->
 <html lang="no">
 <head>
   <meta charset="UTF-8" />
+  <!-- Meta refresh as a simple redirect fallback -->
   <meta http-equiv="refresh" content="0; url=index%202%20copy.html" />
   <title>City-cleaner</title>
+  <!-- JavaScript redirect for immediate navigation -->
   <script>window.location.href = "index%202%20copy.html";</script>
 </head>
 <body>
-  <p>Redirecter til City-cleaner … <a href="index%202%20copy.html">Klikk her hvis du ikke blir sendt videre</a>.</p>
+  <!-- Simple fallback content in case redirects are blocked -->
+  <p>
+    Redirecting to City-cleaner…
+    <a href="index%202%20copy.html">Click here if you are not redirected automatically.</a>
+  </p>
 </body>
 </html>

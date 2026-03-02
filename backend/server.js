@@ -1,3 +1,24 @@
+/**
+ * server.js
+ *
+ * High-level purpose of this file:
+ * - This is the main backend server for the City-cleaner school project.
+ * - It exposes HTTP APIs that the frontend HTML pages call.
+ * - It validates new reports using OpenAI (address, outdoor/indoor, litter rating).
+ * - It stores valid reports in a Postgres database on Render (or in memory as a fallback).
+ * - It computes optimized walking routes via the Google Routes API for the routes.html page.
+ * - It also serves static frontend files (like routes.html) when needed.
+ *
+ * Main responsibilities:
+ * - /api/report      (POST, GET, DELETE)  → create, list, and delete litter reports.
+ * - /api/config      (GET)               → expose safe configuration to the browser (e.g. Maps API key).
+ * - /api/route       (POST)              → call Google Routes API and return an optimized walking route.
+ *
+ * The file is written to work both:
+ * - Locally on your machine (using values from .env)
+ * - In production on Render (using environment variables configured in the dashboard).
+ */
+
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
@@ -7,28 +28,28 @@ const OpenAI = require("openai").default;
 
 const app = express();
 
-// Tillat at frontend (nettleseren) kan snakke med serveren
+// Allow the browser frontend (City-cleaner pages) to call this API.
 app.use(cors());
 
-// Statiske filer (f.eks. routes.html) fra mappen over backend
+// Serve static frontend files (e.g. routes.html) from the folder above /backend.
 app.use(express.static(path.join(__dirname, "..")));
 
-// Eksplicit route til routes.html slik at den alltid kan nås
+// Explicit route to routes.html so that it is always reachable.
 app.get("/routes.html", (req, res) => {
   res.sendFile(path.join(__dirname, "..", "routes.html"));
 });
 
-// Gjør at serveren kan lese JSON-data i forespørsler
-app.use(express.json({ limit: "5mb" })); // 5 MB holder til små bilder i base64
+// Let the server read JSON request bodies (up to ~5 MB for base64 images).
+app.use(express.json({ limit: "5mb" }));
 
-// OpenAI-klient (brukes kun hvis OPENAI_API_KEY er satt)
+// OpenAI client (only created if OPENAI_API_KEY is present).
 let openai = null;
 if (process.env.OPENAI_API_KEY) {
   openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   console.log("OpenAI validation enabled via OPENAI_API_KEY.");
 }
 
-// Koble til Postgres hvis DATABASE_URL er satt, ellers bruk minne
+// Connect to Postgres if DATABASE_URL is set; otherwise fall back to memory only.
 let pool = null;
 if (process.env.DATABASE_URL) {
   pool = new Pool({
@@ -37,7 +58,7 @@ if (process.env.DATABASE_URL) {
   });
   console.log("Using Postgres database via DATABASE_URL.");
 
-  // Sørg for at reports-tabellen har kolonnen litter_rating (hvis ikke, legg den til).
+  // Make sure the reports table has the litter_rating column (add it if missing).
   (async () => {
     try {
       await pool.query(
@@ -52,10 +73,10 @@ if (process.env.DATABASE_URL) {
   console.log("DATABASE_URL not set. Using in-memory storage only.");
 }
 
-// Midlertidig lagring i minne (fallback og for lokal testing)
+// In-memory storage for reports (used as a fallback and for local testing).
 const reports = [];
 
-/** Sjekker om adressen er i Karlsruhe (OpenAI tekstkall). Returnerer true/false. */
+/** Check if the given address string is in Karlsruhe (OpenAI text call). Returns true/false. */
 async function checkAddressInKarlsruhe(address) {
   const completion = await openai.chat.completions.create({
     model: "gpt-4o-mini",
@@ -71,7 +92,7 @@ async function checkAddressInKarlsruhe(address) {
   return answer.startsWith("yes");
 }
 
-/** Sjekker om bildet viser et uteområde (ikke innendørs) og rater søppel 0–10. Returnerer { isOutdoor, litterRating }. */
+/** Check if the image shows an outdoor area (not indoors) and rate litter 0–10. Returns { isOutdoor, litterRating }. */
 async function checkStreetAndLitter(imageData) {
   const completion = await openai.chat.completions.create({
     model: "gpt-4o-mini",

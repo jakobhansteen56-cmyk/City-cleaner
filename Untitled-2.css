@@ -1,3 +1,15 @@
+/*
+ * Untitled-2.css
+ *
+ * File overview:
+ * - Shared CSS used by the City-cleaner prototype and final pages.
+ * - Provides the "phone-like" centered layout, card styling, buttons,
+ *   and general typography that matches the design mockups.
+ * - index 2 copy.html builds on top of these base styles.
+ *
+ * The comments below explain the main visual building blocks.
+ */
+
 /* 1. Overall layout: simple light background, centered "phone" */
 body {
   background: #e5e7eb;               /* light grey, like paper behind phone */
@@ -70,7 +82,7 @@ body {
   box-shadow: none;
 }
 
-/* 6. Buttons: flat, simple */
+/* 6. Buttons: flat, simple (primary = blue pill, secondary = white with border) */
 .btn-primary {
   border-radius: 999px;
   background: #1d4ed8;
@@ -90,7 +102,7 @@ body {
   background: #f3f4f6;
 }
 
-/* 7. Footer: small, subtle, like caption text */
+/* 7. Footer: small, subtle, like caption text at the bottom of the "phone" */
 .footer {
   font-size: 11px;
   color: #9ca3af;
