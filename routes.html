@@ -194,6 +194,52 @@
       flex-shrink: 0;
     }
 
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .lightbox.hidden {
+      display: none;
+    }
+
+    .lightbox-content {
+      position: relative;
+      max-width: 90vw;
+      max-height: 90vh;
+    }
+
+    .lightbox-image {
+      max-width: 100%;
+      max-height: 100%;
+      border-radius: 8px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    .lightbox-close {
+      position: absolute;
+      top: -12px;
+      right: -12px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: none;
+      background: #ffffff;
+      color: #2e5c4a;
+      font-size: 1.2rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
     @media (max-width: 600px) {
       body { padding: 1rem; }
     }
@@ -231,6 +277,13 @@
         </div>
         <div id="map"></div>
       </div>
+    </div>
+  </div>
+
+  <div id="image-lightbox" class="lightbox hidden">
+    <div class="lightbox-content">
+      <button type="button" class="lightbox-close" id="lightbox-close" aria-label="Close image">×</button>
+      <img id="lightbox-image" class="lightbox-image" alt="Report photo" />
     </div>
   </div>
 
@@ -438,6 +491,43 @@
         btnPlanRoute.disabled = false;
       }
     });
+
+    const lightboxEl = document.getElementById("image-lightbox");
+    const lightboxImg = document.getElementById("lightbox-image");
+    const lightboxClose = document.getElementById("lightbox-close");
+
+    function openLightbox(src) {
+      if (!lightboxEl || !lightboxImg) return;
+      lightboxImg.src = src;
+      lightboxEl.classList.remove("hidden");
+    }
+
+    function closeLightbox() {
+      if (!lightboxEl || !lightboxImg) return;
+      lightboxImg.src = "";
+      lightboxEl.classList.add("hidden");
+    }
+
+    if (routeOrderListEl) {
+      routeOrderListEl.addEventListener("click", function (e) {
+        const img = e.target.closest(".address-photo");
+        if (img) {
+          openLightbox(img.src);
+        }
+      });
+    }
+
+    if (lightboxEl) {
+      lightboxEl.addEventListener("click", function (e) {
+        if (e.target === lightboxEl) {
+          closeLightbox();
+        }
+      });
+    }
+
+    if (lightboxClose) {
+      lightboxClose.addEventListener("click", closeLightbox);
+    }
 
     (async function () {
       await loadAddresses();

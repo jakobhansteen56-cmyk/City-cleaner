@@ -276,7 +276,7 @@ app.post("/api/route", async (req, res) => {
   const body = {
     origin,
     destination,
-    travelMode: "DRIVE",
+    travelMode: "WALK",
     ...(intermediates.length > 0 && { intermediates }),
     ...(intermediates.length > 0 && { optimizeWaypointOrder: true }),
   };

@@ -420,19 +420,23 @@
 
       <div class="panel info-page-content">
         <p>
-          City-cleaner lets you report areas that need cleaning. You send a photo and the address, and we check that the report is valid before saving it.
+          City-cleaner lets you report areas that need cleaning. You send a photo and the address, and our system checks that the report is valid before saving it and using it for route planning.
         </p>
         <h3>Step 1 – Upload a photo</h3>
         <p>
-          Take or choose a photo of the area that is not clean. The image must show an outdoor street or similar public space (not indoors). The area should clearly need cleaning (litter rating at least 2).
+          Take or choose a photo of the area that is not clean. The image must show an outdoor area (not indoors), for example a street, sidewalk or other public space. The area should clearly need cleaning – we use an AI model to rate how much litter is visible on a scale from 0 to 10, and only keep reports with a rating of 3 or higher.
         </p>
         <h3>Step 2 – Enter the address</h3>
         <p>
-          Enter the address where the photo was taken. The address must be in Karlsruhe. We use this to forward the report to the right place.
+          Enter the address where the photo was taken. The address must be in Karlsruhe. We use both the written address and an AI check to decide whether the location is in Karlsruhe before we store the report in the database.
         </p>
-        <h3>What happens next?</h3>
+        <h3>How the AI validation works</h3>
         <p>
-          Our system checks that the image shows an outdoor street, that the area needs cleaning, and that the address is in Karlsruhe. If everything is OK, your report is saved. If not, you will see a short message explaining why (e.g. image indoors, area too clean, or address outside Karlsruhe).
+          Before a report is saved, an AI model (OpenAI) checks three things: (1) that the address is in Karlsruhe, (2) that the image shows an outdoor area (not indoors), and (3) that the area is not too clean (litter rating at least 3 out of 10). If any of these checks fail, the report is rejected and you see a short message explaining why (for example: image indoors, area too clean, or address not in Karlsruhe).
+        </p>
+        <h3>Route planning for cleaning</h3>
+        <p>
+          The saved reports are used on a separate route planner page, where the city can see all report addresses with their photos and get an optimized walking route between them. When a route is planned, the used report addresses are cleared from the database so the planner always starts from the newest reports.
         </p>
       </div>
 
