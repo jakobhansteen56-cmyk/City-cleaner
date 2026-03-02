@@ -186,6 +186,14 @@
       margin-top: 0.5rem;
     }
 
+    .address-photo {
+      width: 40px;
+      height: 40px;
+      border-radius: 6px;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+
     @media (max-width: 600px) {
       body { padding: 1rem; }
       .add-address { flex-direction: column; }
@@ -236,6 +244,7 @@
       ? "https://city-cleaner-connect.onrender.com"
       : window.location.origin;
     let addresses = [];
+    let entries = []; // { address, imageData | null }
     let map = null;
     let googleMapsReady = false;
 
@@ -249,17 +258,20 @@
     const mapPlaceholder = document.getElementById("map-placeholder");
 
     function renderAddressList() {
-      if (addresses.length === 0) {
+      if (entries.length === 0) {
         addressListEl.innerHTML = "<li>No addresses yet. Add one below or ensure reports exist in the database.</li>";
         addressListEl.classList.add("empty");
         return;
       }
       addressListEl.classList.remove("empty");
-      addressListEl.innerHTML = addresses
-        .map(
-          (addr, i) =>
-            "<li><span class=\"num\">" + (i + 1) + "</span><span>" + escapeHtml(addr) + "</span></li>"
-        )
+      addressListEl.innerHTML = entries
+        .map(function (entry, i) {
+          var num = i + 1;
+          var imgHtml = entry.imageData
+            ? "<img class=\"address-photo\" src=\"" + escapeHtml(entry.imageData) + "\" alt=\"Photo for address " + num + "\" />"
+            : "";
+          return "<li><span class=\"num\">" + num + "</span>" + imgHtml + "<span>" + escapeHtml(entry.address) + "</span></li>";
+        })
         .join("");
     }
 
@@ -289,17 +301,26 @@
         const res = await fetch(API_BASE + "/api/report");
         if (!res.ok) throw new Error("Failed to load reports");
         const reports = await res.json();
-        addresses = reports.map(function (r) { return (r.address || "").trim(); }).filter(Boolean);
+        const raw = reports
+          .map(function (r) {
+            return {
+              address: (r.address || "").trim(),
+              imageData: r.imageData || null,
+            };
+          })
+          .filter(function (e) { return !!e.address; });
         const seen = {};
-        addresses = addresses.filter(function (a) {
-          const key = a.toLowerCase();
+        entries = raw.filter(function (e) {
+          const key = e.address.toLowerCase();
           if (seen[key]) return false;
           seen[key] = true;
           return true;
         });
+        addresses = entries.map(function (e) { return e.address; });
       } catch (e) {
         console.error(e);
         addresses = [];
+        entries = [];
         addressListEl.innerHTML = "<li>Could not load addresses. Is the backend running?</li>";
         addressListEl.classList.add("empty");
         return;
@@ -363,7 +384,8 @@
     btnAddAddress.addEventListener("click", function () {
       const val = newAddressInput.value.trim();
       if (!val) return;
-      addresses.push(val);
+      entries.push({ address: val, imageData: null });
+      addresses = entries.map(function (e) { return e.address; });
       newAddressInput.value = "";
       renderAddressList();
     });
@@ -414,6 +436,18 @@
           drawRoutesApiResult(data, addresses);
           mapPlaceholder.style.display = "none";
           mapEl.style.display = "block";
+        }
+
+        // Etter at ruten er planlagt: slett alle rapport-adresser i databasen.
+        // Vi beholder likevel adressene i "order" og på kartet i denne visningen.
+        try {
+          await fetch(API_BASE + "/api/report", { method: "DELETE" });
+          // Tøm lokale adresser og oppdater addresselista, slik at nye kall starter fra tomt.
+          addresses = [];
+          entries = [];
+          renderAddressList();
+        } catch (e) {
+          console.error("Failed to delete reports after planning route:", e);
         }
       } finally {
         btnPlanRoute.disabled = false;

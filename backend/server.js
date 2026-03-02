@@ -201,6 +201,29 @@ app.get("/api/report", async (req, res) => {
   res.json(reports);
 });
 
+// Sletter alle rapporter (brukes av routes.html etter planlagt rute)
+app.delete("/api/report", async (req, res) => {
+  if (pool) {
+    try {
+      await pool.query("DELETE FROM reports");
+      console.log("All reports deleted from Postgres.");
+    } catch (err) {
+      console.error("Failed to delete reports from Postgres:", err);
+      return res.status(500).json({
+        success: false,
+        error: "Failed to delete reports",
+        message: err.message || "Database error",
+      });
+    }
+  }
+
+  // Tøm også in-memory-lista
+  reports.length = 0;
+  console.log("In-memory reports list cleared.");
+
+  res.json({ success: true });
+});
+
 // Konfigurasjon for frontend (f.eks. Google Maps API-nøkkel)
 app.get("/api/config", (req, res) => {
   res.json({
