@@ -315,12 +315,11 @@
     }
 
     .page-indicator {
-      position: fixed;
-      bottom: 1.5rem;
-      left: 50%;
-      transform: translateX(-50%);
+      display: block;
+      margin-top: 0.75rem;
       font-size: 0.875rem;
       color: #6b8a7d;
+      text-align: center;
     }
 
     .info-btn {
@@ -552,9 +551,9 @@
         <span>City-cleaner</span>
       </div>
     </section>
-  </div>
 
-  <span class="page-indicator" id="page-indicator">1 of 4</span>
+    <span class="page-indicator" id="page-indicator">1 of 4</span>
+  </div>
 
   <script>
     let lastImageData = null;
@@ -702,7 +701,7 @@
               var reasonMsg = "";
               if (data.reason === "not_outdoor") reasonMsg = "Report was not saved: The image does not show an outdoor area (it appears to be indoors).";
               else if (data.reason === "not_street") reasonMsg = "Report was not saved: The image does not show a street.";
-              else if (data.reason === "too_clean") reasonMsg = "Report was not saved: The area is too clean (rating below 2).";
+              else if (data.reason === "too_clean") reasonMsg = "Report was not saved: The area is too clean (rating below 3).";
               else if (data.reason === "not_karlsruhe") reasonMsg = "Report was not saved: The address is not in Karlsruhe.";
               else reasonMsg = "Report was not saved.";
               alert(reasonMsg);

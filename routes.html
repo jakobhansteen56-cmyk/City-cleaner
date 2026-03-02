@@ -187,16 +187,15 @@
     }
 
     .address-photo {
-      width: 40px;
-      height: 40px;
-      border-radius: 6px;
+      width: 80px;
+      height: 80px;
+      border-radius: 8px;
       object-fit: cover;
       flex-shrink: 0;
     }
 
     @media (max-width: 600px) {
       body { padding: 1rem; }
-      .add-address { flex-direction: column; }
     }
   </style>
 </head>
@@ -207,14 +206,10 @@
 
     <div class="card">
       <h2>Addresses</h2>
-      <p class="route-order-note">Addresses from the database are listed below. Add more if needed, then click "Plan route" to see the optimized route on the map.</p>
+      <p class="route-order-note">Addresses from the database are listed below. Click "Plan route" to see the optimized route on the map.</p>
       <ul id="address-list" class="address-list empty">
         <li>Loading addresses…</li>
       </ul>
-      <div class="add-address">
-        <input type="text" id="new-address" placeholder="Add another address…" />
-        <button type="button" class="btn btn-secondary" id="btn-add-address">Add</button>
-      </div>
       <div style="margin-top: 1rem;">
         <button type="button" class="btn btn-primary" id="btn-plan-route">Plan route</button>
       </div>
@@ -250,27 +245,22 @@
 
     const addressListEl = document.getElementById("address-list");
     const routeOrderListEl = document.getElementById("route-order-list");
-    const newAddressInput = document.getElementById("new-address");
-    const btnAddAddress = document.getElementById("btn-add-address");
     const btnPlanRoute = document.getElementById("btn-plan-route");
     const routeErrorEl = document.getElementById("route-error");
     const mapEl = document.getElementById("map");
     const mapPlaceholder = document.getElementById("map-placeholder");
 
     function renderAddressList() {
-      if (entries.length === 0) {
-        addressListEl.innerHTML = "<li>No addresses yet. Add one below or ensure reports exist in the database.</li>";
+      if (addresses.length === 0) {
+        addressListEl.innerHTML = "<li>No addresses yet. Ensure reports exist in the database.</li>";
         addressListEl.classList.add("empty");
         return;
       }
       addressListEl.classList.remove("empty");
-      addressListEl.innerHTML = entries
-        .map(function (entry, i) {
+      addressListEl.innerHTML = addresses
+        .map(function (addr, i) {
           var num = i + 1;
-          var imgHtml = entry.imageData
-            ? "<img class=\"address-photo\" src=\"" + escapeHtml(entry.imageData) + "\" alt=\"Photo for address " + num + "\" />"
-            : "";
-          return "<li><span class=\"num\">" + num + "</span>" + imgHtml + "<span>" + escapeHtml(entry.address) + "</span></li>";
+          return "<li><span class=\"num\">" + num + "</span><span>" + escapeHtml(addr) + "</span></li>";
         })
         .join("");
     }
@@ -289,10 +279,18 @@
       }
       routeOrderListEl.classList.remove("empty");
       routeOrderListEl.innerHTML = orderedAddresses
-        .map(
-          (addr, i) =>
-            "<li><span class=\"num\">" + (i + 1) + "</span><span>" + escapeHtml(addr) + "</span></li>"
-        )
+        .map(function (addr, i) {
+          var num = i + 1;
+          var lower = (addr || "").toLowerCase();
+          var entry = entries.find(function (e) {
+            return (e.address || "").toLowerCase() === lower;
+          });
+          var imgHtml =
+            entry && entry.imageData
+              ? "<img class=\"address-photo\" src=\"" + escapeHtml(entry.imageData) + "\" alt=\"Photo for address " + num + "\" />"
+              : "";
+          return "<li><span class=\"num\">" + num + "</span>" + imgHtml + "<span>" + escapeHtml(addr) + "</span></li>";
+        })
         .join("");
     }
 
@@ -380,19 +378,6 @@
         map.fitBounds(bounds, 40);
       }
     }
-
-    btnAddAddress.addEventListener("click", function () {
-      const val = newAddressInput.value.trim();
-      if (!val) return;
-      entries.push({ address: val, imageData: null });
-      addresses = entries.map(function (e) { return e.address; });
-      newAddressInput.value = "";
-      renderAddressList();
-    });
-
-    newAddressInput.addEventListener("keydown", function (e) {
-      if (e.key === "Enter") btnAddAddress.click();
-    });
 
     btnPlanRoute.addEventListener("click", async function () {
       routeErrorEl.style.display = "none";
