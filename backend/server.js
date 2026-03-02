@@ -234,11 +234,20 @@ app.post("/api/route", async (req, res) => {
     });
   }
 
-  const origin = { address: trimmed[0] };
-  const destination = { address: trimmed[trimmed.length - 1] };
+  // For Google Routes: tving alle adresser til Karlsruhe, Germany for å unngå
+  // at like gatenavn i andre land velges ved geokoding.
+  const karlsruheAddresses = trimmed.map((addr) => {
+    const lower = addr.toLowerCase();
+    return lower.includes("karlsruhe")
+      ? addr
+      : `${addr}, Karlsruhe, Germany`;
+  });
+
+  const origin = { address: karlsruheAddresses[0] };
+  const destination = { address: karlsruheAddresses[karlsruheAddresses.length - 1] };
   const intermediates =
-    trimmed.length > 2
-      ? trimmed.slice(1, -1).map((a) => ({ address: a }))
+    karlsruheAddresses.length > 2
+      ? karlsruheAddresses.slice(1, -1).map((a) => ({ address: a }))
       : [];
 
   const body = {
