@@ -36,6 +36,18 @@ if (process.env.DATABASE_URL) {
     ssl: { rejectUnauthorized: false },
   });
   console.log("Using Postgres database via DATABASE_URL.");
+
+  // Sørg for at reports-tabellen har kolonnen litter_rating (hvis ikke, legg den til).
+  (async () => {
+    try {
+      await pool.query(
+        "ALTER TABLE reports ADD COLUMN IF NOT EXISTS litter_rating integer"
+      );
+      console.log("Ensured reports.litter_rating column exists.");
+    } catch (err) {
+      console.error("Failed to ensure litter_rating column:", err);
+    }
+  })();
 } else {
   console.log("DATABASE_URL not set. Using in-memory storage only.");
 }
@@ -93,6 +105,7 @@ async function checkStreetAndLitter(imageData) {
 // Tar imot bilde (imageData) + adresse
 app.post("/api/report", async (req, res) => {
   const { imageData, address } = req.body;
+  let litterRating = null;
 
   if (!imageData || !address) {
     return res.status(400).json({ error: "Missing imageData or address" });
@@ -117,7 +130,7 @@ app.post("/api/report", async (req, res) => {
       }
 
       // 2) Er bildet et uteområde, og hvor mye søppel (0–10)?
-      let isOutdoor, litterRating;
+      let isOutdoor;
       try {
         const result = await checkStreetAndLitter(imageData);
         isOutdoor = result.isOutdoor;
@@ -130,7 +143,9 @@ app.post("/api/report", async (req, res) => {
         return res.status(200).json({ success: false, reason: "not_outdoor" });
       }
       if (litterRating < 3) {
-        return res.status(200).json({ success: false, reason: "too_clean" });
+        return res
+          .status(200)
+          .json({ success: false, reason: "too_clean", litterRating });
       }
     } catch (err) {
       console.error("OpenAI validation error:", err);
@@ -150,6 +165,7 @@ app.post("/api/report", async (req, res) => {
     imageData,
     address,
     createdAt: new Date().toISOString(),
+    litterRating,
   };
 
   // Forsøk å lagre i database hvis tilgjengelig
@@ -157,10 +173,10 @@ app.post("/api/report", async (req, res) => {
     try {
       await pool.query(
         `
-        INSERT INTO reports (image_data, address, created_at)
-        VALUES ($1, $2, NOW())
+        INSERT INTO reports (image_data, address, litter_rating, created_at)
+        VALUES ($1, $2, $3, NOW())
       `,
-        [imageData, address]
+        [imageData, address, litterRating]
       );
       console.log("New report stored in Postgres.");
     } catch (err) {
@@ -173,7 +189,7 @@ app.post("/api/report", async (req, res) => {
     console.log("New report stored in memory:", report);
   }
 
-  res.status(201).json({ success: true });
+  res.status(201).json({ success: true, litterRating });
 });
 
 // Henter ut alt som er lagret
@@ -186,6 +202,7 @@ app.get("/api/report", async (req, res) => {
           id,
           image_data AS "imageData",
           address,
+          litter_rating AS "litterRating",
           created_at AS "createdAt"
         FROM reports
         ORDER BY created_at DESC

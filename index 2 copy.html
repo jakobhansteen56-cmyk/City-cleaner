@@ -705,11 +705,17 @@
               var reasonMsg = "";
               if (data.reason === "not_outdoor") reasonMsg = "Report was not saved: The image does not show an outdoor area (it appears to be indoors).";
               else if (data.reason === "not_street") reasonMsg = "Report was not saved: The image does not show a street.";
-              else if (data.reason === "too_clean") reasonMsg = "Report was not saved: The area is too clean (rating below 3).";
+              else if (data.reason === "too_clean") {
+                var ratingTxt = typeof data.litterRating === "number" ? data.litterRating : "?";
+                reasonMsg = "Report was not saved: The area is too clean (rating was " + ratingTxt + " out of 10, below 3).";
+              }
               else if (data.reason === "not_karlsruhe") reasonMsg = "Report was not saved: The address is not in Karlsruhe.";
               else reasonMsg = "Report was not saved.";
               alert(reasonMsg);
               return;
+            }
+            if (typeof data.litterRating === "number") {
+              console.log("Litter rating for this report:", data.litterRating, "/10");
             }
             goToPage(4);
           })

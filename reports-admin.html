@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>City-cleaner – Reports admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "DM Sans", sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(160deg, #f0f7f4 0%, #e8f5e9 50%, #c8e6c9 100%);
+      color: #1b3c34;
+      padding: 1.5rem;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #2e5c4a;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
+    }
+
+    .subtitle {
+      font-size: 0.95rem;
+      color: #3d5a52;
+      margin-bottom: 1.5rem;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+      border: 1px solid rgba(46, 92, 74, 0.2);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+
+    .card-header h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #2e5c4a;
+    }
+
+    .refresh-btn {
+      padding: 0.45rem 0.9rem;
+      border-radius: 999px;
+      border: 1px solid #2e5c4a;
+      background: white;
+      color: #2e5c4a;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .refresh-btn:hover {
+      background: #e8f5e9;
+    }
+
+    .reports-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+      margin-top: 0.5rem;
+    }
+
+    .report-item {
+      background: #f0f7f4;
+      border-radius: 10px;
+      padding: 0.75rem;
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+    }
+
+    .report-thumb {
+      width: 80px;
+      height: 80px;
+      border-radius: 8px;
+      object-fit: cover;
+      background: #e0ece7;
+      flex-shrink: 0;
+    }
+
+    .report-meta {
+      flex: 1;
+      font-size: 0.85rem;
+      color: #3d5a52;
+    }
+
+    .report-address {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+      color: #2e5c4a;
+    }
+
+    .report-line {
+      margin-bottom: 0.15rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.12rem 0.55rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: #2e5c4a;
+      color: white;
+    }
+
+    .rating-low {
+      background: #c62828;
+    }
+
+    .rating-medium {
+      background: #ef6c00;
+    }
+
+    .rating-high {
+      background: #2e5c4a;
+    }
+
+    .empty-state {
+      font-size: 0.9rem;
+      color: #6b8a7d;
+    }
+
+    .error-text {
+      font-size: 0.9rem;
+      color: #c62828;
+      margin-top: 0.5rem;
+    }
+
+    @media (max-width: 600px) {
+      body { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Reports admin</h1>
+    <p class="subtitle">
+      Overview of saved City-cleaner reports with address, photo and litter rating (0–10).
+    </p>
+
+    <div class="card">
+      <div class="card-header">
+        <h2>Reports</h2>
+        <button type="button" class="refresh-btn" id="refresh-btn">
+          ⟳ Refresh
+        </button>
+      </div>
+      <div id="reports-error" class="error-text" style="display:none;"></div>
+      <div id="reports-list" class="reports-list"></div>
+      <p id="reports-empty" class="empty-state" style="display:none;">
+        No reports found in the database.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE =
+      window.location.protocol === "file:" || window.location.origin === "null"
+        ? "https://city-cleaner-connect.onrender.com"
+        : window.location.origin;
+
+    const reportsListEl = document.getElementById("reports-list");
+    const reportsEmptyEl = document.getElementById("reports-empty");
+    const reportsErrorEl = document.getElementById("reports-error");
+    const refreshBtn = document.getElementById("refresh-btn");
+
+    function ratingBadgeClass(rating) {
+      if (typeof rating !== "number") return "";
+      if (rating >= 7) return "rating-high";
+      if (rating >= 4) return "rating-medium";
+      return "rating-low";
+    }
+
+    async function loadReports() {
+      reportsErrorEl.style.display = "none";
+      reportsErrorEl.textContent = "";
+      reportsListEl.innerHTML = "";
+      reportsEmptyEl.style.display = "none";
+
+      try {
+        const res = await fetch(API_BASE + "/api/report");
+        if (!res.ok) {
+          throw new Error("Failed to load reports: " + res.status);
+        }
+        const reports = await res.json();
+        if (!reports || reports.length === 0) {
+          reportsEmptyEl.style.display = "block";
+          return;
+        }
+
+        reportsListEl.innerHTML = reports
+          .map(function (r) {
+            var address = (r.address || "").trim() || "(no address)";
+            var created = r.createdAt
+              ? new Date(r.createdAt).toLocaleString()
+              : "";
+            var rating =
+              typeof r.litterRating === "number" ? r.litterRating : null;
+            var ratingText =
+              rating !== null ? rating + " / 10" : "not available";
+            var badgeClass = ratingBadgeClass(rating);
+            var imgSrc = r.imageData || "";
+            var imgHtml = imgSrc
+              ? '<img class="report-thumb" src="' +
+                imgSrc +
+                '" alt="Report image" />'
+              : '<div class="report-thumb"></div>';
+
+            return (
+              '<div class="report-item">' +
+              imgHtml +
+              '<div class="report-meta">' +
+              '<div class="report-address">' +
+              address +
+              "</div>" +
+              (created
+                ? '<div class="report-line">Created: ' +
+                  created +
+                  "</div>"
+                : "") +
+              '<div class="report-line">Litter rating: ' +
+              '<span class="badge ' +
+              badgeClass +
+              '">' +
+              ratingText +
+              "</span>" +
+              "</div>" +
+              "</div>" +
+              "</div>"
+            );
+          })
+          .join("");
+      } catch (err) {
+        console.error(err);
+        reportsErrorEl.textContent =
+          "Could not load reports. Is the backend running?";
+        reportsErrorEl.style.display = "block";
+      }
+    }
+
+    if (refreshBtn) {
+      refreshBtn.addEventListener("click", function () {
+        loadReports();
+      });
+    }
+
+    loadReports();
+  </script>
+</body>
+</html>
+
