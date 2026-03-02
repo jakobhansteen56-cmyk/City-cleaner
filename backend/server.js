@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 require("dotenv").config();
 const { Pool } = require("pg");
 const OpenAI = require("openai").default;
@@ -8,6 +9,14 @@ const app = express();
 
 // Tillat at frontend (nettleseren) kan snakke med serveren
 app.use(cors());
+
+// Statiske filer (f.eks. routes.html) fra mappen over backend
+app.use(express.static(path.join(__dirname, "..")));
+
+// Eksplicit route til routes.html slik at den alltid kan nås
+app.get("/routes.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "routes.html"));
+});
 
 // Gjør at serveren kan lese JSON-data i forespørsler
 app.use(express.json({ limit: "5mb" })); // 5 MB holder til små bilder i base64
@@ -190,6 +199,104 @@ app.get("/api/report", async (req, res) => {
 
   // Fallback: in-memory-lista
   res.json(reports);
+});
+
+// Konfigurasjon for frontend (f.eks. Google Maps API-nøkkel)
+app.get("/api/config", (req, res) => {
+  res.json({
+    googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || "",
+  });
+});
+
+// Hent korteste rute mellom adresser via Google Routes API
+app.post("/api/route", async (req, res) => {
+  const { addresses } = req.body || {};
+  const key = process.env.GOOGLE_MAPS_API_KEY;
+
+  if (!key) {
+    return res.status(503).json({
+      error: "Google Maps API key not configured",
+      message: "Set GOOGLE_MAPS_API_KEY in server environment.",
+    });
+  }
+
+  if (!Array.isArray(addresses) || addresses.length < 2) {
+    return res.status(400).json({
+      error: "At least two addresses required",
+      message: "Send { addresses: [\"addr1\", \"addr2\", ...] }",
+    });
+  }
+
+  const trimmed = addresses.map((a) => (a || "").trim()).filter(Boolean);
+  if (trimmed.length < 2) {
+    return res.status(400).json({
+      error: "At least two non-empty addresses required",
+    });
+  }
+
+  const origin = { address: trimmed[0] };
+  const destination = { address: trimmed[trimmed.length - 1] };
+  const intermediates =
+    trimmed.length > 2
+      ? trimmed.slice(1, -1).map((a) => ({ address: a }))
+      : [];
+
+  const body = {
+    origin,
+    destination,
+    travelMode: "DRIVE",
+    ...(intermediates.length > 0 && { intermediates }),
+    ...(intermediates.length > 0 && { optimizeWaypointOrder: true }),
+  };
+
+  const fieldMask = [
+    "routes.legs",
+    "routes.distanceMeters",
+    "routes.duration",
+    "routes.polyline.encodedPolyline",
+    "routes.viewport",
+  ];
+  if (intermediates.length > 0) {
+    fieldMask.push("routes.optimizedIntermediateWaypointIndex");
+  }
+
+  const url = "https://routes.googleapis.com/directions/v2:computeRoutes";
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": key,
+        "X-Goog-FieldMask": fieldMask.join(","),
+      },
+      body: JSON.stringify(body),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return res.status(response.status === 400 ? 400 : 500).json({
+        error: "Routes API request failed",
+        message: data.error?.message || data.message || response.statusText,
+      });
+    }
+
+    if (!data.routes || data.routes.length === 0) {
+      return res.status(400).json({
+        error: "No route found",
+        message: "Could not compute a route for the given addresses.",
+      });
+    }
+
+    res.json(data);
+  } catch (err) {
+    console.error("Routes API error:", err);
+    res.status(500).json({
+      error: "Failed to fetch route",
+      message: err.message || "Network error",
+    });
+  }
 });
 
 // Start serveren
